@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 
 volatile int pixel_buffer_start; // global variable
 
@@ -104,19 +105,36 @@ void plotter(){
 void plotxsquared(){
     int x,y=0;
     int count = 120;
-//    for (x=0; x<320; x++){
-//        int y =  x^2;
-//        if(y>0 && y<240){
-//            plot_pixel(x,y,0xff00);
-//        }
-//    }
-
-    for (x=160;x<320;x++){
-        if(count >0 ){
-            plot_pixel(x,count,0xff00);
-            count --;
+    
+    int prevX[320];
+    int prevY[320];
+    int counter = 0;
+    
+    for(x=0; x<320; x++) {
+        int shift = 10;
+        int power = 2;
+        int i = 1;
+        
+        int y = 1;
+        for(;i <= power; i++) {
+            y *= (x-160);
         }
+        y = 120 - y;
 
+        int plotx = 7*(x-160)+160 + shift; // 5
+        
+        if(y>0 && y<240 && plotx > 0 && plotx < 320){
+            prevX[counter] = plotx;
+            prevY[counter] = y;
+            counter++;
+            
+           plot_pixel(plotx,y,0xff00);
+        }
+    }
+    
+    int j;
+    for(j=0; j < counter-1; j++) {
+        draw_line(prevX[j], prevY[j], prevX[j+1], prevY[j+1],0x0000);
     }
 
 }
