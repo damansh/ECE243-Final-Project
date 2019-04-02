@@ -105,30 +105,30 @@ void plotter(){
 }
 
 void plotsin() {
-    double valsX[5];
-    double valsY[5];
+    double valsX[100];
+    double valsY[100];
     
     double i;
     int count =0;
-    for(i=-1; i<=1; i = i + 0.5) {
+    for(i=-5; i<=5; i = i + 0.25) {
         valsY[count] = sin(i*PI);
         valsX[count] = i*PI;
         count++;
     }
-    
-    for(i=0; i<count; i++) {
-        valsY[count] = 120 - 5*valsY[count];
-        valsX[count] = 10*valsX[count] + 160;
+    int k;
+    for(k=0; k<count; k++) {
+        valsY[k] = 120 - 10*valsY[k];
+        valsX[k] = 10*valsX[k] + 160;
         
-        if(valsY[count]>0 && valsY[count]<240 && valsX[count] > 0 && valsX[count] < 320){
-            plot_pixel((int)round(valsX[count]),(int)round(valsY[count]),0xF800);
+        if(valsY[k]>0 && valsY[k]<240 && valsX[k] > 0 && valsX[k] < 320){
+            plot_pixel((int)round(valsX[k]),(int)round(valsY[k]),0xF800);
         }
     }
     
     int j;
     for(j=0; j < count-1; j++) {
-        if(valsY[count]>0 && valsY[count]<240 && valsX[count] > 0 && valsX[count] < 320){
-            draw_line(round(valsX[j]), round(valsY[j]), round(valsX[j+1]), round(valsY[j+1]), 0x0000);
+        if(valsY[j]>0 && valsY[j]<240 && valsX[j] > 0 && valsX[j] < 320){
+            draw_line(round(valsX[j]), round(valsY[j]), round(valsX[j+1]), round(valsY[j+1]), 0xF800);
         }
     }
     
@@ -176,9 +176,9 @@ int main(void){
     /* Read location of the pixel buffer from the pixel buffer controller */
     pixel_buffer_start = *pixel_ctrl_ptr;
     clear_screen();
-    //background();
+    background();
     //plotter();
-    //plotxsquared();
+    plotxsquared();
     plotsin();
 }
 
