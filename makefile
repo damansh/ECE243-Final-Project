@@ -40,7 +40,7 @@ main.srec: main.axf
 
 main.axf: $(OBJS)
 	$(RM) $@
-	$(CC) $(LDFLAGS) $(OBJS) -o $@
+	$(CC) $(LDFLAGS) $(OBJS) -lm -o $@
 
 %.c.o: %.c $(HDRS)
 	$(RM) $@

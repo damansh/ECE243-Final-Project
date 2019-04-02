@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <math.h>
 
+#define PI 3.14159265
+
 volatile int pixel_buffer_start; // global variable
 
 void swap(int* a, int* b) {
@@ -102,6 +104,36 @@ void plotter(){
     }
 }
 
+void plotsin() {
+    double valsX[5];
+    double valsY[5];
+    
+    double i;
+    int count =0;
+    for(i=-1; i<=1; i = i + 0.5) {
+        valsY[count] = sin(i*PI);
+        valsX[count] = i*PI;
+        count++;
+    }
+    
+    for(i=0; i<count; i++) {
+        valsY[count] = 120 - 5*valsY[count];
+        valsX[count] = 10*valsX[count] + 160;
+        
+        if(valsY[count]>0 && valsY[count]<240 && valsX[count] > 0 && valsX[count] < 320){
+            plot_pixel((int)round(valsX[count]),(int)round(valsY[count]),0xF800);
+        }
+    }
+    
+    int j;
+    for(j=0; j < count-1; j++) {
+        if(valsY[count]>0 && valsY[count]<240 && valsX[count] > 0 && valsX[count] < 320){
+            draw_line(round(valsX[j]), round(valsY[j]), round(valsX[j+1]), round(valsY[j+1]), 0x0000);
+        }
+    }
+    
+}
+
 void plotxsquared(){
     int x,y=0;
     int count = 120;
@@ -143,8 +175,10 @@ int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     /* Read location of the pixel buffer from the pixel buffer controller */
     pixel_buffer_start = *pixel_ctrl_ptr;
-    background();
+    clear_screen();
+    //background();
     //plotter();
-    plotxsquared();
+    //plotxsquared();
+    plotsin();
 }
 
