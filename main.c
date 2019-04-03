@@ -199,19 +199,11 @@ void plotx(int power, int shiftx, int shifty){
     int counter = 0;
     
     for(x=0; x<320; x++) {
-        /*
-        int i = 1;
+        double xin = (x-160.0)/16.0;
         
-        int y = 1;
-        for(;i <= power; i++) {
-            y *= (x-160);
-        } */
+        int y = (120 - 12*pow(xin, power)) - shifty*12; // Works, but gives a clobbered register error in CPUlator
         
-        //y = 120 - y;
-
-        y = (120 - pow(x-160, power)) - shifty*12; // Works, but gives a clobbered register error in CPUlator
-        
-        double plotx = 4.5*(x-160)+160 + shiftx*16; // 5
+         int plotx = (x)+shiftx*16;
         
         if(y>0 && y<240 && plotx > 0 && plotx < 320){
             prevX[counter] = round(plotx);
@@ -267,6 +259,7 @@ int main(void){
     background();
     //plote();
 	
+    /*
 	  volatile int * PS2_ptr = (int *)PS2_BASE;
   int PS2_data, RVALID;
   char byte1 = 0, byte2 = 0, byte3 = 0;
@@ -285,6 +278,7 @@ int main(void){
      *(PS2_ptr) = 0xF4;
   }
  }
+     */
 	
 	
     while(true) {
@@ -293,7 +287,8 @@ int main(void){
         if(option == 1) {
             //load_screen();
         } else if(option == 2) {
-            background();
+            //background();
+            plotx(3, 0, 0);
         } else if(option == 3) {
             plotsin();
         }
