@@ -4,6 +4,7 @@
 #include "address_map_arm.h"
 
 #define PI 3.14159265
+#define e  2.71828
 
 volatile int pixel_buffer_start; // global variable
 extern short MYIMAGE [240][320];
@@ -28,11 +29,11 @@ void HEX_PS2(char b1, char b2, char b3){
     int i;
     shift_buffer = (b1 << 16) | (b2 << 8) | b3;
     for (i = 0; i < 6; ++i) {
-    nibble = shift_buffer & 0x0000000F;
-    code = seven_seg_decode_table[nibble];
-    hex_segs[i] = code;
-    shift_buffer = shift_buffer >> 4;
-}
+      nibble = shift_buffer & 0x0000000F;
+      code = seven_seg_decode_table[nibble];
+      hex_segs[i] = code;
+      shift_buffer = shift_buffer >> 4;
+    }
 
 *(HEX3_HEX0_ptr) = *(int *)(hex_segs);
 *(HEX5_HEX4_ptr) = *(int *)(hex_segs + 4);
@@ -160,6 +161,35 @@ void plotsin() {
     
 }
 
+void plote(){
+    int x,y = 0;
+    int count = 120;
+    int prevX[320];
+    int prevY[320];
+    int counter = 0;
+
+    for(x=0; x<320; x++) {
+
+        y = (120 - pow(e, x-160)); // Works, but gives a clobbered register error in CPUlator
+
+        double plotx = 4.5*(x-160)+160; // 5
+
+        if(y>0 && y<240 && plotx > 0 && plotx < 320){
+            prevX[counter] = round(plotx);
+            prevY[counter] = y;
+            counter++;
+
+            plot_pixel(round(plotx),y,0xff00);
+        }
+    }
+
+    int j;
+    for(j=0; j < counter-1; j++) {
+        draw_line(prevX[j], prevY[j], prevX[j+1], prevY[j+1],0x0000);
+    }
+
+}
+
 void plotx(int power, int shiftx, int shifty){
     int x,y=0;
     int count = 120;
@@ -216,6 +246,15 @@ void check_KEYs (int * option) {
     }
 }
 
+void load_screen (){
+   volatile short * pixelbuf = 0xc8000000;
+   int i, j;
+   for (i=0; i<240; i++)
+   for (j=0; j<320; j++)
+   *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
+   //while (1);
+}
+
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     /* Read location of the pixel buffer from the pixel buffer controller */
@@ -225,14 +264,14 @@ int main(void){
     
     clear_screen();
     background();
-    
+    plote();
     while(true) {
         check_KEYs(&option);
         
         if(option == 1) {
-            background();
+            load_screen();
         } else if(option == 2) {
-            plotx(1, 0, 0);
+            background();
         } else if(option == 3) {
             plotsin();
         }
@@ -247,6 +286,27 @@ int main(void){
     return 0;
 }
 
+/*
+  volatile int * PS2_ptr = (int *)PS2_BASE;
+  int PS2_data, RVALID;
+  char byte1 = 0, byte2 = 0, byte3 = 0;
+
+  *(PS2_ptr) = 0xFF; // reset
+  while (1) {
+  PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
+  RVALID = PS2_data & 0x8000; // extract the RVALID field 
+  if (RVALID) {
+
+   byte1 = byte2; 
+   byte2 = byte3;
+   byte3 = PS2_data & 0xFF;
+   HEX_PS2(byte1, byte2, byte3);
+   if ((byte2 == (char)0xAA) && (byte3 == (char)0x00))
+     *(PS2_ptr) = 0xF4;
+  }
+ }
+
+*/
 
 
 
