@@ -12,6 +12,7 @@
         <type>C Program</type>
         <source_files>
             <source_file filepath="true">main.c</source_file>
+            <source_file filepath="true">image.s</source_file>
         </source_files>
         <options>
             <compiler_flags>-g -O1</compiler_flags>
