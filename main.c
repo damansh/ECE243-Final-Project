@@ -113,22 +113,6 @@ void background(){
     draw_line(160, 0, 160, 239, 0x0000); // this line is green
 }
 
-void plotter(){
-    int x = 0;
-    for(; x<320; x++) {
-        int y = 120 - ((x-160)+1);
-        /*
-        if(y>0) {
-            y = 120-y;
-        } else {
-            y = y + 120;
-        } */
-        if(y > 0 && y < 240) {
-            plot_pixel(x, y, 0xff00);
-        }
-    }
-}
-
 void plotsin() {
     double valsX[100];
     double valsY[100];
@@ -247,7 +231,6 @@ void load_screen (){
 } 
 
 char HEX_PS2(char b1, char b2, char b3){
-
     volatile int * HEX3_HEX0_ptr = (int *)HEX3_HEX0_BASE;
     volatile int * HEX5_HEX4_ptr = (int *)HEX5_HEX4_BASE;
 
@@ -273,15 +256,11 @@ char HEX_PS2(char b1, char b2, char b3){
 			returnedChar = characters[j][1];
 		}
 	}
-	
-	
-    if (returnedChar == 'x')
-        plotsin();
-    if (b1 == 'b')
-        plote();
 
     *(HEX3_HEX0_ptr) = *(int *)(hex_segs);
     *(HEX5_HEX4_ptr) = *(int *)(hex_segs + 4);
+    
+    return returnedChar;
 }
 
 int main(void){
@@ -296,71 +275,55 @@ int main(void){
     //plote();
 	
     
-	  volatile int * PS2_ptr = (int *)PS2_BASE;
-  int PS2_data, RVALID;
-  char byte1 = 0, byte2 = 0, byte3 = 0;
-
-  *(PS2_ptr) = 0xFF; // reset
-  while (1) {
-  PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
-  RVALID = PS2_data & 0x8000; // extract the RVALID field 
-  if (RVALID) {
-
-   byte1 = byte2; 
-   byte2 = byte3;
-   byte3 = PS2_data & 0xFF;
-   HEX_PS2(byte1, byte2, byte3);
-   if ((byte2 == (char)0xAA) && (byte3 == (char)0x00))
-     *(PS2_ptr) = 0xF4;
-  }
- }
-     
-	
-	
+    volatile int * PS2_ptr = (int *)PS2_BASE;
+    int PS2_data, RVALID;
+    
+    int holdPower = -1, holdXShift = -1, holdYShift = -1;
+    
     while(true) {
         check_KEYs(&option);
-        
-        if(option == 1) {
-            //load_screen();
-        } else if(option == 2) {
-            //background();
-            plotx(3, 0, 0);
-        } else if(option == 3) {
-            plotsin();
+        PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
+        RVALID = PS2_data & 0x8000; // extract the RVALID field
+        char byte1;
+
+        if(RVALID) {
+            byte1 = PS2_data & 0xFF;
+            
+            char returnedChar = HEX_PS2(0,0,byte1);
+            
+            if(holdPower == -1) {
+                holdPower = returnedChar - '0';
+            } else if(holdXShift == -1) {
+                holdXShift = returnedChar - '0';
+            } else if(holdYShift == -1) {
+                holdYShift = returnedChar - '0';
+            } else if(returnedChar == 'r') {
+                plotx(holdPower, holdXShift, holdYShift);
+                holdPower  = -1;
+                holdXShift = -1;
+                holdYShift = -1;
+            }
+            
+            /*
+            if(option == 1) {
+                //load_screen();
+            } else if(option == 2) {
+                //background();
+                plotx(3, 0, 0);
+            } else if(option == 3) {
+                plotsin();
+            } */
         }
+        
         
     }
     
-    //plotter();
-    plotx(2, 2, 2);
+    //plotx(2, 2, 2);
     //plotsin();
     
 
     return 0;
 }
-
-/*
-  volatile int * PS2_ptr = (int *)PS2_BASE;
-  int PS2_data, RVALID;
-  char byte1 = 0, byte2 = 0, byte3 = 0;
-
-  *(PS2_ptr) = 0xFF; // reset
-  while (1) {
-  PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
-  RVALID = PS2_data & 0x8000; // extract the RVALID field 
-  if (RVALID) {
-
-   byte1 = byte2; 
-   byte2 = byte3;
-   byte3 = PS2_data & 0xFF;
-   HEX_PS2(byte1, byte2, byte3);
-   if ((byte2 == (char)0xAA) && (byte3 == (char)0x00))
-     *(PS2_ptr) = 0xF4;
-  }
- }
-
-*/
-
 
 
 /*
