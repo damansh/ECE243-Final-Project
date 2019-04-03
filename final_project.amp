@@ -15,6 +15,7 @@
         </source_files>
         <options>
             <compiler_flags>-g -O1</compiler_flags>
+            <linker_flags>-Im</linker_flags>
         </options>
         <linker_sections type="Basic">
             <linker_section name=".text">
