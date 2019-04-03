@@ -9,6 +9,26 @@
 volatile int pixel_buffer_start; // global variable
 //extern short MYIMAGE [240][320];
 
+int characters[16][2] = {
+	{0x45, '0'},
+	{0x16, '1'},
+	{0x1E, '2'},
+	{0x26, '3'},
+	{0x25, '4'},
+	{0x2E, '5'},
+	{0x36, '6'},
+	{0x3d, '7'},
+	{0x3E, '8'},
+	{0x46, '9'},
+	{0x22, 'x'},
+	{0x4A, '/'},
+	{0x79, '+'},
+	{0x76, '-'},
+	{0x5A, 'r'}, // Enter key
+	{0x7C, '*'},
+};
+
+
 void swap(int* a, int* b) {
     int temp = *a;
     *a = *b;
@@ -237,14 +257,24 @@ char HEX_PS2(char b1, char b2, char b3){
     unsigned int shift_buffer, nibble;
     unsigned char code;
     int i;
-    shift_buffer = (b1 << 16) | (b2 << 8) | b3;
+    shift_buffer = b3; //(b1 << 16) | (b2 << 8) | b3;
     for (i = 0; i < 6; ++i) {
         nibble = shift_buffer & 0x0000000F;
         code = seven_seg_decode_table[nibble];
         hex_segs[i] = code;
         shift_buffer = shift_buffer >> 4;
     }
-    if (b1 == 'a')
+	
+	int j;
+	char returnedChar;
+	for (j = 0; j < 17; j++) {
+		if(characters[j][0] == b3) {
+			returnedChar = characters[j][1];
+		}
+	}
+	
+	
+    if (returnedChar == 'x')
         plotsin();
     if (b1 == 'b')
         plote();
@@ -264,7 +294,7 @@ int main(void){
     background();
     //plote();
 	
-    /*
+    
 	  volatile int * PS2_ptr = (int *)PS2_BASE;
   int PS2_data, RVALID;
   char byte1 = 0, byte2 = 0, byte3 = 0;
@@ -283,7 +313,7 @@ int main(void){
      *(PS2_ptr) = 0xF4;
   }
  }
-     */
+     
 	
 	
     while(true) {
