@@ -5,6 +5,7 @@
 #define PI 3.14159265
 
 volatile int pixel_buffer_start; // global variable
+extern short MYIMAGE [240][320];
 
 void swap(int* a, int* b) {
     int temp = *a;
@@ -176,9 +177,17 @@ int main(void){
     /* Read location of the pixel buffer from the pixel buffer controller */
     pixel_buffer_start = *pixel_ctrl_ptr;
     clear_screen();
-    background();
+    //background();
     //plotter();
-    plotxsquared();
-    plotsin();
+    //plotxsquared();
+    //plotsin();
+    volatile short * pixelbuf = 0xc8000000;
+    int i, j;
+    for (i=0; i<240; i++)
+        for (j=0; j<320; j++)
+        *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
+   
+    while (1);
+    return 0;
 }
 
