@@ -7,7 +7,7 @@
 #define e  2.71828
 
 volatile int pixel_buffer_start; // global variable
-extern short MYIMAGE [240][320];
+//extern short MYIMAGE [240][320];
 
 void swap(int* a, int* b) {
     int temp = *a;
@@ -246,6 +246,7 @@ void check_KEYs (int * option) {
     }
 }
 
+/*
 void load_screen (){
    volatile short * pixelbuf = 0xc8000000;
    int i, j;
@@ -253,7 +254,7 @@ void load_screen (){
    for (j=0; j<320; j++)
    *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
    //while (1);
-}
+} */
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
@@ -264,12 +265,33 @@ int main(void){
     
     clear_screen();
     background();
-    plote();
+    //plote();
+	
+	  volatile int * PS2_ptr = (int *)PS2_BASE;
+  int PS2_data, RVALID;
+  char byte1 = 0, byte2 = 0, byte3 = 0;
+
+  *(PS2_ptr) = 0xFF; // reset
+  while (1) {
+  PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
+  RVALID = PS2_data & 0x8000; // extract the RVALID field 
+  if (RVALID) {
+
+   byte1 = byte2; 
+   byte2 = byte3;
+   byte3 = PS2_data & 0xFF;
+   HEX_PS2(byte1, byte2, byte3);
+   if ((byte2 == (char)0xAA) && (byte3 == (char)0x00))
+     *(PS2_ptr) = 0xF4;
+  }
+ }
+	
+	
     while(true) {
         check_KEYs(&option);
         
         if(option == 1) {
-            load_screen();
+            //load_screen();
         } else if(option == 2) {
             background();
         } else if(option == 3) {
