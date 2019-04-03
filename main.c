@@ -160,7 +160,7 @@ void plotsin() {
     
 }
 
-void plotxsquared(){
+void plotx(int power, int shiftx, int shifty){
     int x,y=0;
     int count = 120;
     
@@ -169,24 +169,26 @@ void plotxsquared(){
     int counter = 0;
     
     for(x=0; x<320; x++) {
-        int shift = 10;
-        int power = 2;
+        /*
         int i = 1;
         
         int y = 1;
         for(;i <= power; i++) {
             y *= (x-160);
-        }
-        y = 120 - y;
+        } */
+        
+        //y = 120 - y;
 
-        int plotx = 7*(x-160)+160 + shift; // 5
+        y = (120 - pow(x-160, power)) - shifty*12; // Works, but gives a clobbered register error in CPUlator
+        
+        double plotx = 4.5*(x-160)+160 + shiftx*16; // 5
         
         if(y>0 && y<240 && plotx > 0 && plotx < 320){
-            prevX[counter] = plotx;
+            prevX[counter] = round(plotx);
             prevY[counter] = y;
             counter++;
             
-           plot_pixel(plotx,y,0xff00);
+           plot_pixel(round(plotx),y,0xff00);
         }
     }
     
@@ -197,22 +199,63 @@ void plotxsquared(){
 
 }
 
+void check_KEYs (int * option) {
+    volatile int * KEY_ptr = (int *)KEY_BASE;
+    int KEY_value;
+    
+    KEY_value = *(KEY_ptr);
+    
+    if (KEY_value == 0x1)  {
+        *option = 1;
+    } else if (KEY_value == 0x2) {
+        *option = 2;
+    } else if(KEY_value == 0x4) {
+        *option = 3;
+    } else {
+        *option = 0;
+    }
+}
+
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     /* Read location of the pixel buffer from the pixel buffer controller */
     pixel_buffer_start = *pixel_ctrl_ptr;
+    
+    int option;
+    
     clear_screen();
-    //background();
+    background();
+    
+    while(true) {
+        check_KEYs(&option);
+        
+        if(option == 1) {
+            background();
+        } else if(option == 2) {
+            plotx(1, 0, 0);
+        } else if(option == 3) {
+            plotsin();
+        }
+        
+    }
+    
     //plotter();
-    //plotxsquared();
+    plotx(2, 2, 2);
     //plotsin();
-    volatile short * pixelbuf = 0xc8000000;
-    int i, j;
-    for (i=0; i<240; i++)
-        for (j=0; j<320; j++)
-        *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
-   
-    while (1);
+    
+
     return 0;
 }
 
+
+
+
+/*
+ volatile short * pixelbuf = 0xc8000000;
+ int i, j;
+ for (i=0; i<240; i++)
+ for (j=0; j<320; j++)
+ *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
+ 
+ while (1);
+ */
