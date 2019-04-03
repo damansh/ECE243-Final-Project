@@ -1,2 +1,4 @@
 .global MYIMAGE
-MYIMAGE: .incbin "maxresdefault.bin"
+
+MYIMAGE: .incbin "maxresdefault1.bin"
+

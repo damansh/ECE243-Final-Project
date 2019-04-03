@@ -2,12 +2,13 @@
 #include <stdbool.h>
 #include <math.h>
 #include "address_map_arm.h"
+//#include "image.s"
 
 #define PI 3.14159265
 #define e  2.71828
 
 volatile int pixel_buffer_start; // global variable
-//extern short MYIMAGE [240][320];
+extern short MYIMAGE [240][320];
 
 int characters[16][2] = {
 	{0x45, '0'},
@@ -235,7 +236,7 @@ void check_KEYs (int * option) {
     }
 }
 
-/*
+
 void load_screen (){
    volatile short * pixelbuf = 0xc8000000;
    int i, j;
@@ -243,7 +244,7 @@ void load_screen (){
    for (j=0; j<320; j++)
    *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
    //while (1);
-} */
+} 
 
 char HEX_PS2(char b1, char b2, char b3){
 
@@ -289,7 +290,7 @@ int main(void){
     pixel_buffer_start = *pixel_ctrl_ptr;
     
     int option;
-    
+    load_screen();
     clear_screen();
     background();
     //plote();
