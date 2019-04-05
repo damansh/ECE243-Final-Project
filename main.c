@@ -269,19 +269,22 @@ int main(void){
     pixel_buffer_start = *pixel_ctrl_ptr;
     
     int option;
-    load_screen();
+    while(true) {
+        check_KEYs(&option);
+        load_screen();
+        if(option != 0) break;
+    }
     clear_screen();
     background();
     //plote();
 	
-    
     volatile int * PS2_ptr = (int *)PS2_BASE;
     int PS2_data, RVALID;
     
     int holdPower = -1, holdXShift = -1, holdYShift = -1;
     
     while(true) {
-        check_KEYs(&option);
+        //check_KEYs(&option);
         PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
         RVALID = PS2_data & 0x8000; // extract the RVALID field
         char byte1;
@@ -291,18 +294,32 @@ int main(void){
             
             char returnedChar = HEX_PS2(0,0,byte1);
             
+            char checkForEnter = returnedChar;
+            
+            while(byte1 != 'r') {
+                PS2_data = *(PS2_ptr);
+                checkForEnter = PS2_data & 0xFF;
+                byte1 = HEX_PS2(0,0,checkForEnter);
+            }
+            
             if(holdPower == -1) {
                 holdPower = returnedChar - '0';
+                plotx(holdPower, 0, 0);
             } else if(holdXShift == -1) {
                 holdXShift = returnedChar - '0';
+                background();
+                plotx(holdPower, holdXShift,0);
             } else if(holdYShift == -1) {
                 holdYShift = returnedChar - '0';
+                background();
+                plotx(holdPower, holdXShift,holdYShift);
             } else if(returnedChar == 'r') {
                 plotx(holdPower, holdXShift, holdYShift);
                 holdPower  = -1;
                 holdXShift = -1;
                 holdYShift = -1;
             }
+            
             
             /*
             if(option == 1) {
