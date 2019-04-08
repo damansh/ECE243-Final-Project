@@ -11,7 +11,7 @@
 volatile int pixel_buffer_start; // global variable
 extern short MYIMAGE [240][320];
 
-int characters[16][2] = {
+int characters[17][2] = {
 	{0x45, '0'},
 	{0x16, '1'},
 	{0x1E, '2'},
@@ -28,6 +28,7 @@ int characters[16][2] = {
 	{0x76, '-'},
 	{0x5A, 'r'}, // Enter key
 	{0x7C, '*'},
+    {0x1B, 's'}
 };
 
 
@@ -114,34 +115,18 @@ void background(){
     draw_line(160, 0, 160, 239, 0x0000); // this line is green
 }
 
-void plotsin() {
-    double valsX[100];
-    double valsY[100];
-    
-    double i;
-    int count =0;
-    for(i=-5; i<=5; i = i + 0.25) {
-        valsY[count] = cos(i*PI);
-        valsX[count] = i*PI;
-        count++;
-    }
-    int k;
-    for(k=0; k<count; k++) {
-        valsY[k] = 120 - 12*valsY[k]; //10
-        valsX[k] = 16*valsX[k] + 160; // 10
+void plotsin(int *xValues, int *yValues, bool cosPlot) {
+    int x;
+    for(x = 0; x < 320; x++) {
+        double xin = (x-160.0)/16.0;
+        xValues[x] = x;
+        if(cosPlot) {
+            yValues[x] += round(12*cos(xin));
+        } else {
+            yValues[x] += round(12*sin(xin));
+        }
         
-        if(valsY[k]>0 && valsY[k]<240 && valsX[k] > 0 && valsX[k] < 320){
-            plot_pixel((int)round(valsX[k]),(int)round(valsY[k]),0xF800);
-        }
     }
-    
-    int j;
-    for(j=0; j < count-1; j++) {
-        if(valsY[j]>0 && valsY[j]<240 && valsX[j] > 0 && valsX[j] < 320){
-            draw_line(round(valsX[j]), round(valsY[j]), round(valsX[j+1]), round(valsY[j+1]), 0xF800);
-        }
-    }
-    
 }
 
 void plote(){
@@ -173,35 +158,43 @@ void plote(){
 
 }
 
-void plotx(int power, int shiftx, int shifty){
+void plotx(int power, int shiftx, int shifty, int *prevX, int *prevY){
     int x,y=0;
     int count = 120;
     
-    int prevX[320];
-    int prevY[320];
     int counter = 0;
     
     for(x=0; x<320; x++) {
         double xin = (x-160.0)/16.0;
         
-        int y = (120 - 12*pow(xin, power)) - shifty*12; // Works, but gives a clobbered register error in CPUlator
+        int y = 12*pow(xin, power);
         
          int plotx = (x)+shiftx*16;
         
-        if(y>0 && y<240 && plotx > 0 && plotx < 320){
-            prevX[counter] = round(plotx);
-            prevY[counter] = y;
-            counter++;
-            
-           plot_pixel(round(plotx),y,0xff00);
+            prevX[x] = round(plotx);
+            prevY[x] += y;
+    }
+}
+
+void drawFunction(int *xValues, int *yValues) {
+    int i;
+    for(i = 0; i < 320; i++) {
+        int y = 120 - yValues[i];
+        if(y > 0 && y < 240 && xValues[i] > 0 && xValues[i] < 320) {
+            plot_pixel(xValues[i], y, 0xff00);
         }
     }
     
-    int j;
-    for(j=0; j < counter-1; j++) {
-        draw_line(prevX[j], prevY[j], prevX[j+1], prevY[j+1],0x0000);
+    
+    for(i = 0; i < 319; i++) {
+        int y = 120 - yValues[i];
+        int yNext = 120 - yValues[i+1];
+        if(y > 0 && y < 240 && xValues[i] > 0 && xValues[i] < 320) {
+            if(yNext > 0 && yNext < 240 && xValues[i+1] > 0 && xValues[i+1] < 320) {
+                draw_line(xValues[i], y, xValues[i+1], yNext ,0x0000);
+            }
+        }
     }
-
 }
 
 void check_KEYs (int * option) {
@@ -252,7 +245,7 @@ char HEX_PS2(char b1, char b2, char b3){
 	
 	int j;
 	char returnedChar;
-	for (j = 0; j < 17; j++) {
+	for (j = 0; j < 18; j++) {
 		if(characters[j][0] == b3) {
 			returnedChar = characters[j][1];
 		}
@@ -284,7 +277,6 @@ int main(void){
     }
     clear_screen();
     background();
-    //plote();
 	
     volatile int * PS2_ptr = (int *)PS2_BASE;
     int PS2_data, RVALID;
@@ -292,6 +284,8 @@ int main(void){
     int holdPower = -1, holdXShift = -1, holdYShift = -1;
     
     char eqn[512];
+    int xValues[320] = {0};
+    int yValues[320] = {0};
     
     while(true) {
         PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
@@ -315,6 +309,7 @@ int main(void){
             }
         }
         returnedChar = '0';
+        
         // Find the length of the character array
         int charLength = 0;
         while(eqn[charLength] != '\0') {
@@ -327,10 +322,13 @@ int main(void){
         int charTraverse;
         for(charTraverse = 0; charTraverse < charLength; charTraverse++) {
             if(eqn[charTraverse] == 'x') {
-                plotx(eqn[charTraverse + 1] - '0', 0, 0);
+                plotx(eqn[charTraverse + 1] - '0', 0, 0, xValues, yValues);
                 charTraverse++;
+            } else if(eqn[charTraverse] == 's') {
+                plotsin(xValues, yValues, false);
             }
         }
+        drawFunction(xValues, yValues);
         
         int charEmpty = 0;
         for(charEmpty = 0; charEmpty < 512; charEmpty++) {
