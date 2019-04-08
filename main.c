@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include "address_map_arm.h"
+#include <string.h>
 //#include "image.s"
 
 #define PI 3.14159265
@@ -120,14 +121,14 @@ void plotsin() {
     double i;
     int count =0;
     for(i=-5; i<=5; i = i + 0.25) {
-        valsY[count] = sin(i*PI);
+        valsY[count] = cos(i*PI);
         valsX[count] = i*PI;
         count++;
     }
     int k;
     for(k=0; k<count; k++) {
-        valsY[k] = 120 - 10*valsY[k];
-        valsX[k] = 10*valsX[k] + 160;
+        valsY[k] = 120 - 12*valsY[k]; //10
+        valsX[k] = 16*valsX[k] + 160; // 10
         
         if(valsY[k]>0 && valsY[k]<240 && valsX[k] > 0 && valsX[k] < 320){
             plot_pixel((int)round(valsX[k]),(int)round(valsY[k]),0xF800);
@@ -263,6 +264,13 @@ char HEX_PS2(char b1, char b2, char b3){
     return returnedChar;
 }
 
+void append(char* s, char c)
+{
+    int len = strlen(s);
+    s[len] = c;
+    s[len+1] = '\0';
+}
+
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     /* Read location of the pixel buffer from the pixel buffer controller */
@@ -283,6 +291,55 @@ int main(void){
     
     int holdPower = -1, holdXShift = -1, holdYShift = -1;
     
+    char eqn[512];
+    
+    while(true) {
+        PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
+        RVALID = PS2_data & 0x8000; // extract the RVALID field
+        char byte1;
+        byte1 = PS2_data & 0xFF;
+        char returnedChar = '0';
+        
+        while(returnedChar != 'r') {
+            PS2_data = *(PS2_ptr);
+            byte1 = PS2_data & 0xFF;
+            RVALID = PS2_data & 0x8000;
+            if(RVALID) {
+                byte1 = PS2_data & 0xFF;
+                
+                returnedChar = HEX_PS2(0,0,byte1);
+                
+                if(returnedChar != 'r') {
+                    append(eqn, returnedChar);
+                }
+            }
+        }
+        returnedChar = '0';
+        // Find the length of the character array
+        int charLength = 0;
+        while(eqn[charLength] != '\0') {
+            charLength++;
+        }
+        
+        background();
+        
+        
+        int charTraverse;
+        for(charTraverse = 0; charTraverse < charLength; charTraverse++) {
+            if(eqn[charTraverse] == 'x') {
+                plotx(eqn[charTraverse + 1] - '0', 0, 0);
+                charTraverse++;
+            }
+        }
+        
+        int charEmpty = 0;
+        for(charEmpty = 0; charEmpty < 512; charEmpty++) {
+            eqn[charEmpty] = '\0';
+        }
+        
+    }
+    
+    /*
     while(true) {
         //check_KEYs(&option);
         PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
@@ -319,21 +376,11 @@ int main(void){
                 holdXShift = -1;
                 holdYShift = -1;
             }
-            
-            
-            /*
-            if(option == 1) {
-                //load_screen();
-            } else if(option == 2) {
-                //background();
-                plotx(3, 0, 0);
-            } else if(option == 3) {
-                plotsin();
-            } */
         }
         
         
-    }
+    } */
+    
     
     //plotx(2, 2, 2);
     //plotsin();
