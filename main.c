@@ -326,7 +326,6 @@ int main(void){
         char returnedChar = '0';
         
         while(returnedChar != 'r') {
-            displayOnHEX(eqn);
             PS2_data = *(PS2_ptr);
             byte1 = PS2_data & 0xFF;
             RVALID = PS2_data & 0x8000;
@@ -343,7 +342,7 @@ int main(void){
                     break;
                 } else if(returnedChar != 'r' && returnedChar != eqn[strlen(eqn)-1]) {
                     append(eqn, returnedChar);
-                    //displayOnHEX(eqn);
+                    displayOnHEX(eqn);
                 }
                 
                 while(RVALID) {
