@@ -184,7 +184,7 @@ void plotconstant(int* xValues, int* yValues, int constant) {
 
 void delay(int number_of_seconds) {
     volatile int * MPcore_private_timer_ptr = (int *)MPCORE_PRIV_TIMER;
-    int counter = 20000000; // timeout = 1/(200 MHz) x 200x10^6 = 1 sec
+    int counter = 20000; // timeout = 1/(200 MHz) x 200x10^6 = 1 sec
 
     *(MPcore_private_timer_ptr) = counter;
     *(MPcore_private_timer_ptr + 2) = 0b001;
@@ -195,13 +195,14 @@ void delay(int number_of_seconds) {
 }
 
 void drawFunction(int *xValues, int *yValues) {
+    /*
     int i;
     for(i = 0; i < 320; i++) {
         int y = 120 - yValues[i];
         if(y > 0 && y < 240 && xValues[i] > 0 && xValues[i] < 320) {
             plot_pixel(xValues[i], y, 0xff00);
         }
-    }
+    } */
     
     
     for(i = 0; i < 319; i++) {
