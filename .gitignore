@@ -12,3 +12,7 @@ main.axf
 main.axf
 main.axf.objdump
 main.srec
+image.s
+main.srec
+main.c.o
+main.axf

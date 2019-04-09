@@ -12,28 +12,31 @@ volatile int pixel_buffer_start; // global variable
 extern short MYIMAGE [240][320];
 bool add = false, subtract = false, multiply = false;
 
-int characters[21][2] = {
-	{0x45, '0'},
-	{0x16, '1'},
-	{0x1E, '2'},
-	{0x26, '3'},
-	{0x25, '4'},
-	{0x2E, '5'},
-	{0x36, '6'},
-	{0x3d, '7'},
-	{0x3E, '8'},
-	{0x46, '9'},
-	{0x22, 'x'},
-	{0x4A, '/'},
-	{0x79, '+'},
-	{0x4E, '-'},
-	{0x5A, 'r'}, // Enter key
-	{0x7C, '*'},
-    {0x1B, 's'},
-    {0x76, '~'}, // Escape key
-    {0x29, ' '}, // Space key
-    {0x21, 'c'},
-    {0x24, 'e'}
+int characters[24][3] = {
+    {0x45, '0',0x3F},
+	{0x16, '1',0x06},
+	{0x1E, '2',0x5B},
+	{0x26, '3',0x4F},
+	{0x25, '4',0x66},
+	{0x2E, '5',0x6D},
+	{0x36, '6',0x7D},
+	{0x3d, '7',0x07},
+	{0x3E, '8',0x7F},
+	{0x46, '9',0x67},
+	{0x22, 'x',0x52},
+	{0x4A, '/',0x00},
+	{0x79, '+',0x73},
+	{0x4E, '-',0x40},
+	{0x5A, 'r',0x00}, // Enter key
+	{0x7C, '*',0x00},
+    {0x1B, 's',0x6D},
+    {0x76, '~',0x00}, // Escape key
+    {0x29, ' ',0x00}, // Space key
+    {0x21, 'c',0x39},
+    {0x24, 'e',0x79},
+    {0x43, 'i',0x30},
+    {0x31, 'n',0x54},
+    {0x44, 'o',0x5C}
 };
 
 
@@ -92,6 +95,7 @@ void draw_line(int x0, int y0, int x1, int y1, short int line_color) {
 
     }
 }
+
 
 void clear_screen() {
     int x;
@@ -221,10 +225,37 @@ void load_screen (){
    for (i=0; i<240; i++)
    for (j=0; j<320; j++)
    *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
-   //while (1);
-} 
+}
+
+void displayOnHEX(char * eqn) {
+    volatile int * HEX3_HEX0_ptr = (int *)HEX3_HEX0_BASE;
+    volatile int * HEX5_HEX4_ptr = (int *)HEX5_HEX4_BASE;
+    
+    int sizeOfEqn = strlen(eqn);
+    int i;
+    char display[5];
+    
+    unsigned char hex_segs[] = {0, 0, 0, 0, 0, 0, 0, 0};
+    
+    for(i = 0; i < sizeOfEqn && i < 5; i++) {
+        display[i] = eqn[sizeOfEqn - i];
+    }
+    
+    
+    for(i = 0; i < sizeof(display)/sizeof(char); i++) {
+        int j;
+        for(j = 0; j < sizeof(characters)/sizeof(char); j++) {
+            if(display[i] == characters[j][1]) {
+                hex_segs[i] = characters[j][2];
+            }
+        }
+    }
+    *(HEX3_HEX0_ptr) = *(int *)(hex_segs);
+    *(HEX5_HEX4_ptr) = *(int *)(hex_segs + 4);
+}
 
 char HEX_PS2(char b1, char b2, char b3){
+    /*
     volatile int * HEX3_HEX0_ptr = (int *)HEX3_HEX0_BASE;
     volatile int * HEX5_HEX4_ptr = (int *)HEX5_HEX4_BASE;
 
@@ -235,13 +266,13 @@ char HEX_PS2(char b1, char b2, char b3){
     unsigned int shift_buffer, nibble;
     unsigned char code;
     int i;
-    shift_buffer = b3 & 0x0F; //(b1 << 16) | (b2 << 8) | b3;
+    shift_buffer = b3 & 0x0F;
     for (i = 0; i < 6; ++i) {
         nibble = shift_buffer & 0x0000000F;
         code = seven_seg_decode_table[nibble];
         hex_segs[i] = code;
         shift_buffer = shift_buffer >> 4;
-    }
+    } */
 	
 	int j;
 	char returnedChar;
@@ -251,8 +282,8 @@ char HEX_PS2(char b1, char b2, char b3){
 		}
 	}
 
-    *(HEX3_HEX0_ptr) = *(int *)(hex_segs);
-    *(HEX5_HEX4_ptr) = *(int *)(hex_segs + 4);
+    //*(HEX3_HEX0_ptr) = *(int *)(hex_segs);
+    //*(HEX5_HEX4_ptr) = *(int *)(hex_segs + 4);
     
     return returnedChar;
 }
@@ -295,6 +326,7 @@ int main(void){
         char returnedChar = '0';
         
         while(returnedChar != 'r') {
+            displayOnHEX(eqn);
             PS2_data = *(PS2_ptr);
             byte1 = PS2_data & 0xFF;
             RVALID = PS2_data & 0x8000;
@@ -311,6 +343,7 @@ int main(void){
                     break;
                 } else if(returnedChar != 'r' && returnedChar != eqn[strlen(eqn)-1]) {
                     append(eqn, returnedChar);
+                    //displayOnHEX(eqn);
                 }
                 
                 while(RVALID) {
