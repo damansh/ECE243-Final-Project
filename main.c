@@ -306,6 +306,12 @@ int main(void){
                 if(returnedChar != 'r') {
                     append(eqn, returnedChar);
                 }
+                
+                char differentChar = returnedChar;
+                while(differentChar == returnedChar) {
+                    byte1 = PS2_data & 0xFF;
+                    differentChar = HEX_PS2(0,0,byte1);
+                }
             }
         }
         returnedChar = '0';
