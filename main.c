@@ -3,6 +3,8 @@
 #include <math.h>
 #include "address_map_arm.h"
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 //#include "image.s"
 
 #define PI 3.14159265
@@ -180,6 +182,18 @@ void plotconstant(int* xValues, int* yValues, int constant) {
     
 }
 
+void delay(int number_of_seconds)
+{
+    // Converting time into milli_seconds
+    int milli_seconds = 1000 * number_of_seconds;
+    
+    // Stroing start time
+    clock_t start_time = clock();
+    
+    // looping till required time is not acheived
+    while (clock() < start_time + milli_seconds);
+}
+
 void drawFunction(int *xValues, int *yValues) {
     int i;
     for(i = 0; i < 320; i++) {
@@ -196,6 +210,7 @@ void drawFunction(int *xValues, int *yValues) {
         if(y > 0 && y < 240 && xValues[i] > 0 && xValues[i] < 320) {
             if(yNext > 0 && yNext < 240 && xValues[i+1] > 0 && xValues[i+1] < 320) {
                 draw_line(xValues[i], y, xValues[i+1], yNext ,0x0000);
+                delay(1);
             }
         }
     }
@@ -255,25 +270,6 @@ void displayOnHEX(char * eqn) {
 }
 
 char HEX_PS2(char b1, char b2, char b3){
-    /*
-    volatile int * HEX3_HEX0_ptr = (int *)HEX3_HEX0_BASE;
-    volatile int * HEX5_HEX4_ptr = (int *)HEX5_HEX4_BASE;
-
-    unsigned char seven_seg_decode_table[] = {
-            0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07,
-            0x7F, 0x67, 0x77, 0x7C, 0x39, 0x5E, 0x79, 0x71};
-    unsigned char hex_segs[] = {0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned int shift_buffer, nibble;
-    unsigned char code;
-    int i;
-    shift_buffer = b3 & 0x0F;
-    for (i = 0; i < 6; ++i) {
-        nibble = shift_buffer & 0x0000000F;
-        code = seven_seg_decode_table[nibble];
-        hex_segs[i] = code;
-        shift_buffer = shift_buffer >> 4;
-    } */
-	
 	int j;
 	char returnedChar;
 	for (j = 0; j < sizeof(characters)/sizeof(char); j++) {
@@ -281,10 +277,6 @@ char HEX_PS2(char b1, char b2, char b3){
 			returnedChar = characters[j][1];
 		}
 	}
-
-    //*(HEX3_HEX0_ptr) = *(int *)(hex_segs);
-    //*(HEX5_HEX4_ptr) = *(int *)(hex_segs + 4);
-    
     return returnedChar;
 }
 
@@ -294,6 +286,7 @@ void append(char* s, char c)
     s[len] = c;
     s[len+1] = '\0';
 }
+
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
@@ -380,12 +373,12 @@ int main(void){
                 add = true, subtract = false, multiply = false;
             }
             
-            printf("%s", expression);
+            
             int i;
             for(i = 0; i < strlen(expression); i++) {
                 if(expression[i] == 'x') {
                     int number;
-                    if(strlen(expression) == 1) {
+                    if(strlen(expression) == i+1) {
                         number = 1;
                     } else {
                         number = expression[i+1]-'0';
@@ -408,19 +401,6 @@ int main(void){
             expression = strtok(NULL, " ");
         }
         
-        /*
-        int charTraverse;
-        for(charTraverse = 0; charTraverse < charLength; charTraverse++) {
-            
-            
-         
-            if(eqn[charTraverse] == 'x') {
-                plotx(eqn[charTraverse + 1] - '0', 0, 0, xValues, yValues);
-                charTraverse++;
-            } else if(eqn[charTraverse] == 's') {
-                plotsin(xValues, yValues, false);
-            }
-        } */
         drawFunction(xValues, yValues);
         
         int charEmpty = 0;
@@ -429,64 +409,7 @@ int main(void){
         }
         
     }
-    
-    /*
-    while(true) {
-        //check_KEYs(&option);
-        PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
-        RVALID = PS2_data & 0x8000; // extract the RVALID field
-        char byte1;
-
-        if(RVALID) {
-            byte1 = PS2_data & 0xFF;
-            
-            char returnedChar = HEX_PS2(0,0,byte1);
-            
-            char checkForEnter = returnedChar;
-            
-            while(byte1 != 'r') {
-                PS2_data = *(PS2_ptr);
-                checkForEnter = PS2_data & 0xFF;
-                byte1 = HEX_PS2(0,0,checkForEnter);
-            }
-            
-            if(holdPower == -1) {
-                holdPower = returnedChar - '0';
-                plotx(holdPower, 0, 0);
-            } else if(holdXShift == -1) {
-                holdXShift = returnedChar - '0';
-                background();
-                plotx(holdPower, holdXShift,0);
-            } else if(holdYShift == -1) {
-                holdYShift = returnedChar - '0';
-                background();
-                plotx(holdPower, holdXShift,holdYShift);
-            } else if(returnedChar == 'r') {
-                plotx(holdPower, holdXShift, holdYShift);
-                holdPower  = -1;
-                holdXShift = -1;
-                holdYShift = -1;
-            }
-        }
-        
-        
-    } */
-    
-    
-    //plotx(2, 2, 2);
-    //plotsin();
-    
 
     return 0;
 }
 
-
-/*
- volatile short * pixelbuf = 0xc8000000;
- int i, j;
- for (i=0; i<240; i++)
- for (j=0; j<320; j++)
- *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
- 
- while (1);
- */
