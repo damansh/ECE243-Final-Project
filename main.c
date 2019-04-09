@@ -9,7 +9,7 @@
 #define e  2.71828
 
 volatile int pixel_buffer_start; // global variable
-extern short MYIMAGE [240][320];
+//extern short MYIMAGE [240][320];
 
 int characters[17][2] = {
 	{0x45, '0'},
@@ -214,7 +214,7 @@ void check_KEYs (int * option) {
     }
 }
 
-
+/*
 void load_screen (){
    volatile short * pixelbuf = 0xc8000000;
    int i, j;
@@ -222,7 +222,7 @@ void load_screen (){
    for (j=0; j<320; j++)
    *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
    //while (1);
-} 
+} */
 
 char HEX_PS2(char b1, char b2, char b3){
     volatile int * HEX3_HEX0_ptr = (int *)HEX3_HEX0_BASE;
@@ -272,7 +272,7 @@ int main(void){
     int option;
     while(true) {
         check_KEYs(&option);
-        load_screen();
+        //load_screen();
         if(option != 0) break;
     }
     clear_screen();
