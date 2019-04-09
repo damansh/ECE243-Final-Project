@@ -324,6 +324,7 @@ int main(void){
         char byte1;
         byte1 = PS2_data & 0xFF;
         char returnedChar = '0';
+        displayOnHEX(eqn);
         
         while(returnedChar != 'r') {
             PS2_data = *(PS2_ptr);
@@ -378,6 +379,8 @@ int main(void){
             } else {
                 add = true, subtract = false, multiply = false;
             }
+            
+            printf("%s", expression);
             int i;
             for(i = 0; i < strlen(expression); i++) {
                 if(expression[i] == 'x') {
