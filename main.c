@@ -233,18 +233,18 @@ void displayOnHEX(char * eqn) {
     
     int sizeOfEqn = strlen(eqn);
     int i;
-    char display[5];
+    char display[6];
     
     unsigned char hex_segs[] = {0, 0, 0, 0, 0, 0, 0, 0};
     
-    for(i = 0; i < sizeOfEqn && i < 5; i++) {
+    for(i = 0; i < sizeOfEqn && i < 6; i++) {
         display[i] = eqn[sizeOfEqn - 1 - i];
     }
     
     
     for(i = 0; i < sizeof(display)/sizeof(char); i++) {
         int j;
-        for(j = 0; j < sizeof(characters)/sizeof(char); j++) {
+        for(j = 0; j < sizeof(characters)/sizeof(int); j++) {
             if(display[i] == characters[j][1]) {
                 hex_segs[i] = characters[j][2];
             }

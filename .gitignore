@@ -16,3 +16,6 @@ image.s
 main.srec
 main.c.o
 main.axf
+main.srec
+main.c.o
+main.axf
