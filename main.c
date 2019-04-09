@@ -5,10 +5,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include "confirmationSound.c"
 //#include "image.s"
 
 #define PI 3.14159265
 #define e  2.71828
+#define NUM_ELEMENTS 67060
 
 volatile int pixel_buffer_start; // global variable
 extern short MYIMAGE [240][320];
@@ -282,12 +284,30 @@ void append(char* s, char c)
     s[len+1] = '\0';
 }
 
+void audio(){
+    unsigned int fifospace;
+    volatile int * audio_ptr = (int *) 0xFF203040; // audio port
+    int count = 0;
+    while (1)
+    {
+        fifospace = *(audio_ptr+1);
+        if ((fifospace & 0x00FF0000) > 0 && (fifospace & 0xFF000000) > 0) {
+            int sample = 500000*data[count];	// read right channel only
+            *(audio_ptr + 2) = sample;		// Write to both channels
+            *(audio_ptr + 3) = sample;
+        }
+        count = count +1;
+        if (count == NUM_ELEMENTS)
+            count = 0;
+    }
+
+}
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     /* Read location of the pixel buffer from the pixel buffer controller */
     pixel_buffer_start = *pixel_ctrl_ptr;
-    
+    audio();
     int option;
     while(true) {
         check_KEYs(&option);
