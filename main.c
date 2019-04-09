@@ -238,7 +238,7 @@ void displayOnHEX(char * eqn) {
     unsigned char hex_segs[] = {0, 0, 0, 0, 0, 0, 0, 0};
     
     for(i = 0; i < sizeOfEqn && i < 5; i++) {
-        display[i] = eqn[sizeOfEqn - i];
+        display[i] = eqn[sizeOfEqn - 1 - i];
     }
     
     
