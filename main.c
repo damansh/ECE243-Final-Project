@@ -184,7 +184,7 @@ void plotconstant(int* xValues, int* yValues, int constant) {
 
 void delay(int number_of_seconds) {
     volatile int * MPcore_private_timer_ptr = (int *)MPCORE_PRIV_TIMER;
-    int counter = 200000000; // timeout = 1/(200 MHz) x 200x10^6 = 1 sec
+    int counter = 20000000; // timeout = 1/(200 MHz) x 200x10^6 = 1 sec
 
     *(MPcore_private_timer_ptr) = counter;
     *(MPcore_private_timer_ptr + 2) = 0b001;
