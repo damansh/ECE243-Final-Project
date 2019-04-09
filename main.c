@@ -204,7 +204,7 @@ void drawFunction(int *xValues, int *yValues) {
         }
     } */
     
-    
+    int i;
     for(i = 0; i < 319; i++) {
         int y = 120 - yValues[i];
         int yNext = 120 - yValues[i+1];
