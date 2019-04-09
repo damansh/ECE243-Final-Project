@@ -349,7 +349,12 @@ int main(void){
             int i;
             for(i = 0; i < strlen(expression); i++) {
                 if(expression[i] == 'x') {
-                    int number = expression[i+1]-'0';
+                    int number;
+                    if(strlen(expression) == 1) {
+                        number = 1;
+                    } else {
+                        number = expression[i+1]-'0';
+                    }
                     plotx(number, 0, 0, xValues, yValues);
                     i++;
                 } else if(expression[i] == 's') {
