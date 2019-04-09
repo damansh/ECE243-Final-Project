@@ -307,10 +307,11 @@ int main(void){
                     append(eqn, returnedChar);
                 }
                 
-                char differentChar = returnedChar;
-                while(RVALID) {
+                char differentChar = HEX_PS2(0,0,byte1);;
+                while(differentChar == returnedChar) {
                     PS2_data = *(PS2_ptr);
-                    RVALID = PS2_data & 0x8000;
+                    byte1 = PS2_data & 0x8000;
+                    differentChar = HEX_PS2(0,0,byte1);
                 }
             }
         }

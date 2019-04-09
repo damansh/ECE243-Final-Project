@@ -6,3 +6,6 @@ image.s.o
 main.axf
 main.c.o
 main.srec
+main.srec
+main.c.o
+main.axf
