@@ -182,16 +182,16 @@ void plotconstant(int* xValues, int* yValues, int constant) {
     
 }
 
-void delay(int number_of_seconds)
-{
-    // Converting time into milli_seconds
-    int milli_seconds = 1000 * number_of_seconds;
+void delay(int number_of_seconds) {
+    volatile int * MPcore_private_timer_ptr = (int *)MPCORE_PRIV_TIMER;
+    int counter = 200000000; // timeout = 1/(200 MHz) x 200x10^6 = 1 sec
+
+    *(MPcore_private_timer_ptr) = counter;
+    *(MPcore_private_timer_ptr + 2) = 0b001;
+
+    while (*(MPcore_private_timer_ptr + 3) == 0);
+    *(MPcore_private_timer_ptr + 3) = 1;
     
-    // Stroing start time
-    clock_t start_time = clock();
-    
-    // looping till required time is not acheived
-    while (clock() < start_time + milli_seconds);
 }
 
 void drawFunction(int *xValues, int *yValues) {
