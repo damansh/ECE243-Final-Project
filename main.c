@@ -113,6 +113,8 @@ void clear_screen() {
 
 void background(){
     clear_screen();
+    
+    
     draw_line(0, 120, 319, 120, 0x0000);   // this line is blue
     draw_line(160, 0, 160, 239, 0x0000); // this line is green
     int x,y;
@@ -186,7 +188,7 @@ void plotconstant(int* xValues, int* yValues, int constant) {
 
 void delay(int number_of_seconds) {
     volatile int * MPcore_private_timer_ptr = (int *)MPCORE_PRIV_TIMER;
-    int counter = 20000; // timeout = 1/(200 MHz) x 200x10^6 = 1 sec
+    int counter = 2000000; // timeout = 1/(200 MHz) x 200x10^6 = 1 sec
 
     *(MPcore_private_timer_ptr) = counter;
     *(MPcore_private_timer_ptr + 2) = 0b001;
@@ -197,15 +199,7 @@ void delay(int number_of_seconds) {
 }
 
 void drawFunction(int *xValues, int *yValues) {
-    /*
-    int i;
-    for(i = 0; i < 320; i++) {
-        int y = 120 - yValues[i];
-        if(y > 0 && y < 240 && xValues[i] > 0 && xValues[i] < 320) {
-            plot_pixel(xValues[i], y, 0xff00);
-        }
-    } */
-    
+    //background();
     int i;
     for(i = 0; i < 319; i++) {
         int y = 120 - yValues[i];
@@ -321,7 +315,7 @@ int main(void){
         load_screen();
         if(option != 0) break;
     }
-    clear_screen();
+    //clear_screen();
     background();
 	
     volatile int * PS2_ptr = (int *)PS2_BASE;
@@ -341,6 +335,12 @@ int main(void){
         char returnedChar = '0';
         displayOnHEX(eqn);
         
+        int a;
+        for(a = 0; a < 320; a++) {
+            xValues[a] = 0;
+            yValues[a] = 0;
+        }
+        
         while(returnedChar != 'r') {
             PS2_data = *(PS2_ptr);
             byte1 = PS2_data & 0xFF;
@@ -355,6 +355,8 @@ int main(void){
                     for(i =0; i < 320; i++) {
                         yValues[i] = 0;
                     }
+                    clear_screen();
+                    background();
                     break;
                 } else if(returnedChar != 'r' && returnedChar != eqn[strlen(eqn)-1]) {
                     append(eqn, returnedChar);
@@ -375,8 +377,6 @@ int main(void){
         while(eqn[charLength] != '\0') {
             charLength++;
         }
-        
-        background();
         
         bool reachedEnd = false;
         int startingPoint = 0;
@@ -423,14 +423,12 @@ int main(void){
             }
             expression = strtok(NULL, " ");
         }
-        
         drawFunction(xValues, yValues);
         
         int charEmpty = 0;
         for(charEmpty = 0; charEmpty < 512; charEmpty++) {
             eqn[charEmpty] = '\0';
         }
-        
     }
 
     return 0;
