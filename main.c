@@ -12,7 +12,7 @@ volatile int pixel_buffer_start; // global variable
 //extern short MYIMAGE [240][320];
 bool add = false, subtract = false, multiply = false;
 
-int characters[19][2] = {
+int characters[21][2] = {
 	{0x45, '0'},
 	{0x16, '1'},
 	{0x1E, '2'},
@@ -32,7 +32,8 @@ int characters[19][2] = {
     {0x1B, 's'},
     {0x76, '~'}, // Escape key
     {0x29, ' '}, // Space key
-    {0x21, 'c'}
+    {0x21, 'c'},
+    {0x24, 'e'}
 };
 
 
@@ -135,33 +136,14 @@ void plotsin(int *xValues, int *yValues, bool cosPlot) {
     }
 }
 
-void plote(){
-    int x,y = 0;
-    int count = 120;
-    int prevX[320];
-    int prevY[320];
-    int counter = 0;
-
-    for(x=0; x<320; x++) {
-
-        y = (120 - pow(e, x-160)); // Works, but gives a clobbered register error in CPUlator
-
-        double plotx = 4.5*(x-160)+160; // 5
-
-        if(y>0 && y<240 && plotx > 0 && plotx < 320){
-            prevX[counter] = round(plotx);
-            prevY[counter] = y;
-            counter++;
-
-            plot_pixel(round(plotx),y,0xff00);
-        }
+void plote(int *xValues, int *yValues){
+    int x;
+    for(x = 0; x < 320; x++) {
+        double xin = (x-160.0)/16.0;
+        xValues[x] = x;
+        if(add) yValues[x] += 12*exp(xin);
+        else if(subtract) yValues[x] -= 12*exp(xin);
     }
-
-    int j;
-    for(j=0; j < counter-1; j++) {
-        draw_line(prevX[j], prevY[j], prevX[j+1], prevY[j+1],0x0000);
-    }
-
 }
 
 void plotx(int power, int shiftx, int shifty, int *prevX, int *prevY){
@@ -182,6 +164,16 @@ void plotx(int power, int shiftx, int shifty, int *prevX, int *prevY){
             else if(subtract) prevY[x] -= y;
         
     }
+}
+
+void plotconstant(int* xValues, int* yValues, int constant) {
+    int x;
+    for(x = 0; x < 320; x++) {
+        xValues[x] = x;
+        if(add) yValues[x] -= -12*constant;
+        else if(subtract) yValues[x] += -12*constant;
+    }
+    
 }
 
 void drawFunction(int *xValues, int *yValues) {
@@ -359,12 +351,18 @@ int main(void){
                 if(expression[i] == 'x') {
                     int number = expression[i+1]-'0';
                     plotx(number, 0, 0, xValues, yValues);
+                    i++;
                 } else if(expression[i] == 's') {
                     plotsin(xValues, yValues, false);
                     break;
                 } else if(expression[i] == 'c') {
                     plotsin(xValues, yValues, true);
                     break;
+                } else if(expression[i] == 'e') {
+                    plote(xValues, yValues);
+                    break;
+                } else if(expression[i] >= '0' && expression[i] <= '9') {
+                    plotconstant(xValues, yValues, expression[i] - '0');
                 }
             }
             expression = strtok(NULL, " ");
