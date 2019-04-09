@@ -3,3 +3,6 @@ main.srec
 main.c.o
 main.axf
 image.s.o
+main.axf
+main.c.o
+main.srec

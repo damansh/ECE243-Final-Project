@@ -309,6 +309,7 @@ int main(void){
                 
                 char differentChar = returnedChar;
                 while(differentChar == returnedChar) {
+                    PS2_data = *(PS2_ptr);
                     byte1 = PS2_data & 0xFF;
                     differentChar = HEX_PS2(0,0,byte1);
                 }
