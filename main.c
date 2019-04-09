@@ -9,9 +9,10 @@
 #define e  2.71828
 
 volatile int pixel_buffer_start; // global variable
-//extern short MYIMAGE [240][320];
+extern short MYIMAGE [240][320];
+bool add = false, subtract = false, multiply = false;
 
-int characters[17][2] = {
+int characters[19][2] = {
 	{0x45, '0'},
 	{0x16, '1'},
 	{0x1E, '2'},
@@ -25,10 +26,13 @@ int characters[17][2] = {
 	{0x22, 'x'},
 	{0x4A, '/'},
 	{0x79, '+'},
-	{0x76, '-'},
+	{0x4E, '-'},
 	{0x5A, 'r'}, // Enter key
 	{0x7C, '*'},
-    {0x1B, 's'}
+    {0x1B, 's'},
+    {0x76, '~'}, // Escape key
+    {0x29, ' '}, // Space key
+    {0x21, 'c'}
 };
 
 
@@ -121,9 +125,11 @@ void plotsin(int *xValues, int *yValues, bool cosPlot) {
         double xin = (x-160.0)/16.0;
         xValues[x] = x;
         if(cosPlot) {
-            yValues[x] += round(12*cos(xin));
+            if(add) yValues[x] += round(12*cos(xin));
+            else if(subtract) yValues[x] -= round(12*cos(xin));
         } else {
-            yValues[x] += round(12*sin(xin));
+            if(add) yValues[x] += round(12*sin(xin));
+            else if(subtract) yValues[x] -= round(12*sin(xin));
         }
         
     }
@@ -172,7 +178,9 @@ void plotx(int power, int shiftx, int shifty, int *prevX, int *prevY){
          int plotx = (x)+shiftx*16;
         
             prevX[x] = round(plotx);
-            prevY[x] += y;
+            if(add) prevY[x] += y;
+            else if(subtract) prevY[x] -= y;
+        
     }
 }
 
@@ -214,7 +222,7 @@ void check_KEYs (int * option) {
     }
 }
 
-/*
+
 void load_screen (){
    volatile short * pixelbuf = 0xc8000000;
    int i, j;
@@ -222,7 +230,7 @@ void load_screen (){
    for (j=0; j<320; j++)
    *(pixelbuf + (j<<0) + (i<<9)) = MYIMAGE[i][j];
    //while (1);
-} */
+}
 
 char HEX_PS2(char b1, char b2, char b3){
     volatile int * HEX3_HEX0_ptr = (int *)HEX3_HEX0_BASE;
@@ -235,7 +243,7 @@ char HEX_PS2(char b1, char b2, char b3){
     unsigned int shift_buffer, nibble;
     unsigned char code;
     int i;
-    shift_buffer = b3; //(b1 << 16) | (b2 << 8) | b3;
+    shift_buffer = b3 & 0x0F; //(b1 << 16) | (b2 << 8) | b3;
     for (i = 0; i < 6; ++i) {
         nibble = shift_buffer & 0x0000000F;
         code = seven_seg_decode_table[nibble];
@@ -245,7 +253,7 @@ char HEX_PS2(char b1, char b2, char b3){
 	
 	int j;
 	char returnedChar;
-	for (j = 0; j < 18; j++) {
+	for (j = 0; j < sizeof(characters)/sizeof(char); j++) {
 		if(characters[j][0] == b3) {
 			returnedChar = characters[j][1];
 		}
@@ -272,7 +280,7 @@ int main(void){
     int option;
     while(true) {
         check_KEYs(&option);
-        //load_screen();
+        load_screen();
         if(option != 0) break;
     }
     clear_screen();
@@ -303,15 +311,19 @@ int main(void){
                 
                 returnedChar = HEX_PS2(0,0,byte1);
                 
-                if(returnedChar != 'r') {
+                if(returnedChar == '~') {
+                    int i;
+                    for(i =0; i < 320; i++) {
+                        yValues[i] = 0;
+                    }
+                    break;
+                } else if(returnedChar != 'r') {
                     append(eqn, returnedChar);
                 }
                 
-                char differentChar = HEX_PS2(0,0,byte1);;
-                while(differentChar == returnedChar) {
+                while(RVALID) {
                     PS2_data = *(PS2_ptr);
-                    byte1 = PS2_data & 0x8000;
-                    differentChar = HEX_PS2(0,0,byte1);
+                    RVALID = PS2_data & 0x8000;
                 }
             }
         }
@@ -325,16 +337,52 @@ int main(void){
         
         background();
         
+        bool reachedEnd = false;
+        int startingPoint = 0;
+        char* expression;
+        expression = strtok(eqn, " ");
         
+        while(true) {
+            if(expression == NULL) {
+                break;
+            } else if(expression[0] == '+') {
+                add = true, subtract = false, multiply = false;
+            } else if(expression[0] == '-') {
+                add = false, subtract = true, multiply = false;
+            } else if(expression[0] == '*') {
+                add = false, subtract = false, multiply = true;
+            } else {
+                add = true, subtract = false, multiply = false;
+            }
+            int i;
+            for(i = 0; i < strlen(expression); i++) {
+                if(expression[i] == 'x') {
+                    int number = expression[i+1]-'0';
+                    plotx(number, 0, 0, xValues, yValues);
+                } else if(expression[i] == 's') {
+                    plotsin(xValues, yValues, false);
+                    break;
+                } else if(expression[i] == 'c') {
+                    plotsin(xValues, yValues, true);
+                    break;
+                }
+            }
+            expression = strtok(NULL, " ");
+        }
+        
+        /*
         int charTraverse;
         for(charTraverse = 0; charTraverse < charLength; charTraverse++) {
+            
+            
+         
             if(eqn[charTraverse] == 'x') {
                 plotx(eqn[charTraverse + 1] - '0', 0, 0, xValues, yValues);
                 charTraverse++;
             } else if(eqn[charTraverse] == 's') {
                 plotsin(xValues, yValues, false);
             }
-        }
+        } */
         drawFunction(xValues, yValues);
         
         int charEmpty = 0;
