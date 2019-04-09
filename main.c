@@ -301,19 +301,20 @@ void audio(){
             int sample = 500000*data[count];	// read right channel only
             *(audio_ptr + 2) = sample;		// Write to both channels
             *(audio_ptr + 3) = sample;
+	    if (count == NUM_ELEMENTS)
+            	break;
+	    else
+	        count++;
         }
-        count = count +1;
-        if (count == NUM_ELEMENTS)
-            count = 0;
-    }
 
+    }
 }
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     /* Read location of the pixel buffer from the pixel buffer controller */
     pixel_buffer_start = *pixel_ctrl_ptr;
-    audio();
+    //audio();
     int option;
     while(true) {
         check_KEYs(&option);
@@ -366,6 +367,7 @@ int main(void){
                 }
             }
         }
+		audio();
         returnedChar = '0';
         
         // Find the length of the character array

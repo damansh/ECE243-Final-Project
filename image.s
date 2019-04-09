@@ -1,3 +1,3 @@
 .global MYIMAGE
 
-MYIMAGE: .incbin "maxresdefault1.bin"
+MYIMAGE: .incbin "W:/GitHub/ECE243-Final-Project/ECE243-Final-Project/maxresdefault1.bin"
