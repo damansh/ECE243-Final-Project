@@ -26,3 +26,8 @@ image.s
 main.axf
 main.axf.objdump
 main.srec
+makefile
+main.srec
+main.c.o
+main.axf
+image.s
