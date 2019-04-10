@@ -10,7 +10,7 @@
 
 #define PI 3.14159265
 #define e  2.71828
-#define NUM_ELEMENTS 16347
+#define NUM_ELEMENTS 67060
 
 volatile int pixel_buffer_start; // global variable
 extern short MYIMAGE [240][320];
