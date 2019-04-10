@@ -220,6 +220,7 @@ void audio(){
 
 void drawFunction(int *xValues, int *yValues) {
     //background();
+    audio();
     int i;
     for(i = 0; i < 319; i++) {
         int y = 120 - yValues[i];
@@ -231,7 +232,7 @@ void drawFunction(int *xValues, int *yValues) {
             }
         }
     }
-	audio();
+	
 }
 
 void check_KEYs (int * option) {
@@ -366,6 +367,7 @@ int main(void){
                 } else if(returnedChar != 'r' && returnedChar != eqn[strlen(eqn)-1]) {
                     append(eqn, returnedChar);
                     displayOnHEX(eqn);
+                    emptyArray = false;
                 }
                 
                 while(RVALID) {
