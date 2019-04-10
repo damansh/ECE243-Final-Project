@@ -10,7 +10,7 @@
 
 #define PI 3.14159265
 #define e  2.71828
-#define NUM_ELEMENTS 67060
+#define NUM_ELEMENTS 16347
 
 volatile int pixel_buffer_start; // global variable
 extern short MYIMAGE [240][320];
@@ -329,6 +329,7 @@ int main(void){
     char eqn[512];
     int xValues[320] = {0};
     int yValues[320] = {0};
+    bool emptyArray = false;
     
     while(true) {
         PS2_data = *(PS2_ptr); // read the Data register in the PS/2 port
@@ -360,6 +361,7 @@ int main(void){
                     }
                     clear_screen();
                     background();
+                    emptyArray = true;
                     break;
                 } else if(returnedChar != 'r' && returnedChar != eqn[strlen(eqn)-1]) {
                     append(eqn, returnedChar);
@@ -426,7 +428,11 @@ int main(void){
             }
             expression = strtok(NULL, " ");
         }
-        drawFunction(xValues, yValues);
+        if(!emptyArray) {
+            drawFunction(xValues, yValues);
+        } else {
+            emptyArray = false;
+        }
         
         int charEmpty = 0;
         for(charEmpty = 0; charEmpty < 512; charEmpty++) {
