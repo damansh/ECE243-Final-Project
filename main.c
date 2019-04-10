@@ -362,7 +362,6 @@ int main(void){
                     }
                     clear_screen();
                     background();
-                    emptyArray = true;
                     break;
                 } else if(returnedChar != 'r' && returnedChar != eqn[strlen(eqn)-1]) {
                     append(eqn, returnedChar);
@@ -430,11 +429,7 @@ int main(void){
             }
             expression = strtok(NULL, " ");
         }
-        //if(!emptyArray) {
             drawFunction(xValues, yValues);
-        //} else {
-            emptyArray = false;
-       // }
         
         int charEmpty = 0;
         for(charEmpty = 0; charEmpty < 512; charEmpty++) {
