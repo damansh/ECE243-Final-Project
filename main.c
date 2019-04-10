@@ -198,6 +198,26 @@ void delay(int number_of_seconds) {
     
 }
 
+void audio(){
+    unsigned int fifospace;
+    volatile int * audio_ptr = (int *) 0xFF203040; // audio port
+    int count = 0;
+    while (1)
+    {
+        fifospace = *(audio_ptr+1);
+        if ((fifospace & 0x00FF0000) > 0 && (fifospace & 0xFF000000) > 0) {
+            int sample = 500000*data[count];	// read right channel only
+            *(audio_ptr + 2) = sample;		// Write to both channels
+            *(audio_ptr + 3) = sample;
+	    if (count == NUM_ELEMENTS)
+            	break;
+	    else
+	        count++;
+        }
+
+    }
+}
+
 void drawFunction(int *xValues, int *yValues) {
     //background();
     int i;
@@ -211,6 +231,7 @@ void drawFunction(int *xValues, int *yValues) {
             }
         }
     }
+	audio();
 }
 
 void check_KEYs (int * option) {
@@ -284,25 +305,7 @@ void append(char* s, char c)
     s[len+1] = '\0';
 }
 
-void audio(){
-    unsigned int fifospace;
-    volatile int * audio_ptr = (int *) 0xFF203040; // audio port
-    int count = 0;
-    while (1)
-    {
-        fifospace = *(audio_ptr+1);
-        if ((fifospace & 0x00FF0000) > 0 && (fifospace & 0xFF000000) > 0) {
-            int sample = 500000*data[count];	// read right channel only
-            *(audio_ptr + 2) = sample;		// Write to both channels
-            *(audio_ptr + 3) = sample;
-	    if (count == NUM_ELEMENTS)
-            	break;
-	    else
-	        count++;
-        }
 
-    }
-}
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
@@ -369,7 +372,7 @@ int main(void){
                 }
             }
         }
-		audio();
+		
         returnedChar = '0';
         
         // Find the length of the character array
