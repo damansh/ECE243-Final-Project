@@ -430,11 +430,11 @@ int main(void){
             }
             expression = strtok(NULL, " ");
         }
-        if(!emptyArray) {
+        //if(!emptyArray) {
             drawFunction(xValues, yValues);
-        } else {
+        //} else {
             emptyArray = false;
-        }
+       // }
         
         int charEmpty = 0;
         for(charEmpty = 0; charEmpty < 512; charEmpty++) {
